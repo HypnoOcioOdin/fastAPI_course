@@ -1,3 +1,4 @@
+from os import name
 from typing import List
 from fastapi import FastAPI, Depends,status, Response, HTTPException
 from sqlalchemy.sql.expression import null
@@ -8,6 +9,7 @@ from sqlalchemy.orm import Session
 app = FastAPI()
 
 models.Base.metadata.create_all(bind=engine)
+
 
 def get_db():
     db = SessionLocal()
@@ -58,3 +60,12 @@ def show(id , response: Response ,db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = f"no blog with id {id} found")
 
     return blog
+
+
+@app.post('/user',status_code=status.HTTP_201_CREATED)
+def create(request: schemas.User, db: Session = Depends(get_db)):
+    new_user = models.User(name = request.name, email = request.email, password = request.password)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
