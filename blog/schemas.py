@@ -12,8 +12,8 @@ class ShowBlog(Blog):
     class Config():
         orm_mode = True
 
-class User(BaseModel):
-    
+
+class User(BaseModel):    
     name:str
     email: str
     password:str
