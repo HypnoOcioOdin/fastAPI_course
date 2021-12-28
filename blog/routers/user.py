@@ -1,14 +1,10 @@
-from typing import List
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
 from sqlalchemy.orm import Session
-from blog import database
 from blog.database import get_db
 from .. import schemas
-from blog import models
-from fastapi import status, HTTPException, Response
-from blog.hashing import Hash
-
+from fastapi import status
+from blog.repository import userRepository
 
 router = APIRouter(
     prefix = "/user",
@@ -17,18 +13,9 @@ router = APIRouter(
 
 @router.post('/',status_code=status.HTTP_201_CREATED, )
 def create(request: schemas.User, db: Session = Depends(get_db)):
-    hashedPassword = Hash.bcrypt(request.password)
-    new_user = models.User(name = request.name, email = request.email, password = hashedPassword)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+    return userRepository.create(request,db)
 
 #, response_model=schemas.ShowUser
 @router.get('/{id}',status_code=status.HTTP_200_OK, response_model=schemas.ShowUser)
 def show(id: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail = f"no user with id {id} found")
-
-    return user
+    return userRepository.show(id,db)
